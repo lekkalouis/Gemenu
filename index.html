@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manufacturing Declaration Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="panel">
+        <header class="panel__header">
+          <h1>Manufacturing Declaration Generator</h1>
+          <p>
+            Create shipment-specific ingredient declarations with the required export
+            statements.
+          </p>
+        </header>
+        <form id="declaration-form" class="form">
+          <div class="form__grid">
+            <label>
+              Reference (IOEC)
+              <input type="text" name="reference" placeholder="C63348" required />
+            </label>
+            <label>
+              Vessel &amp; Voyage
+              <input type="text" name="vessel" placeholder="NYK FURANO 025E" required />
+            </label>
+            <label>
+              Container number
+              <input type="text" name="container" placeholder="OOCU0369290" required />
+            </label>
+            <label>
+              Seal number
+              <input type="text" name="seal" placeholder="OOLKMV5781" required />
+            </label>
+            <label>
+              Shipment date
+              <input type="date" name="shipDate" required />
+            </label>
+            <label>
+              Consignee (optional)
+              <input type="text" name="consignee" placeholder="Bronwen Aitken, IOEC" />
+            </label>
+          </div>
+
+          <fieldset class="form__fieldset">
+            <legend>Selected SKUs</legend>
+            <div class="sku-picker">
+              <label>
+                SKU
+                <select id="sku-select">
+                  <option value="">Select an item</option>
+                </select>
+              </label>
+              <label>
+                Quantity / Pack size
+                <input
+                  type="text"
+                  id="sku-quantity"
+                  placeholder="12 x 100ml"
+                />
+              </label>
+              <button type="button" id="add-sku" class="btn">Add SKU</button>
+            </div>
+            <div id="sku-list" class="sku-list"></div>
+          </fieldset>
+
+          <fieldset class="form__fieldset">
+            <legend>Signature &amp; Packaging</legend>
+            <div class="form__grid">
+              <label>
+                Signatory full name
+                <input type="text" name="signatoryName" placeholder="André Cabano" required />
+              </label>
+              <label>
+                Designation
+                <input type="text" name="signatoryTitle" placeholder="Director" required />
+              </label>
+              <label>
+                Packaging medium / specification
+                <input
+                  type="text"
+                  name="packaging"
+                  placeholder="Retail packed in sealed jars with tamper-evident lids"
+                  required
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form__fieldset" id="dairy-fieldset">
+            <legend>Dairy declarations (only shown when dairy SKUs are selected)</legend>
+            <div class="form__grid">
+              <label>
+                Dairy heat treatment
+                <input type="text" name="dairyHeat" placeholder="Pasteurized" />
+              </label>
+              <label>
+                Dairy country of origin
+                <input type="text" name="dairyOrigin" placeholder="South Africa" />
+              </label>
+            </div>
+            <p class="form__hint">
+              Dairy % by dry weight is pulled from the product specs. Add the heat treatment and
+              country of origin here.
+            </p>
+          </fieldset>
+
+          <div class="form__actions">
+            <button type="submit" class="btn btn--primary">Generate declaration</button>
+            <button type="button" id="download" class="btn btn--secondary" disabled>
+              Download file
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel--preview">
+        <header class="panel__header">
+          <h2>Preview</h2>
+          <p>Review the generated declaration before downloading.</p>
+        </header>
+        <div id="preview" class="preview">
+          <p class="preview__placeholder">
+            Fill in the form to generate a manufacturing declaration.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
