@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Export Manufacturing Declaration Generator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        --primary: #0a5d5e;
+        --muted: #5b6366;
+        --panel: #f6f7f8;
+        --border: #d6d9dc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #1a1d1f;
+      }
+
+      header {
+        padding: 32px clamp(16px, 4vw, 48px) 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, #f5fbfb 0%, #ffffff 60%);
+      }
+
+      header h1 {
+        margin: 0 0 8px;
+        font-size: clamp(24px, 3vw, 34px);
+        color: var(--primary);
+      }
+
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      main {
+        display: grid;
+        gap: 24px;
+        padding: 24px clamp(16px, 4vw, 48px) 48px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        background: #fff;
+      }
+
+      textarea {
+        min-height: 140px;
+        resize: vertical;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      .sku-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .sku-item {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      .sku-item h4 {
+        margin: 0 0 4px;
+        font-size: 14px;
+      }
+
+      .sku-item small {
+        color: var(--muted);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      button {
+        border: none;
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #ffffff;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .preview {
+        white-space: pre-wrap;
+        font-family: "Courier New", Courier, monospace;
+        background: #0d1117;
+        color: #e6edf3;
+        padding: 16px;
+        border-radius: 12px;
+        min-height: 220px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #e8f4f4;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      footer {
+        padding: 12px clamp(16px, 4vw, 48px) 32px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Manufacturing Declaration Generator</h1>
+      <p>
+        Create export-ready ingredient declarations with shipment details, SKU-specific
+        ingredient lists, and compliance statements.
+      </p>
+    </header>
+
+    <main>
+      <section class="card grid">
+        <div class="row">
+          <div>
+            <label for="reference">Reference</label>
+            <input id="reference" placeholder="C63348" />
+          </div>
+          <div>
+            <label for="vessel">Vessel & Voyage</label>
+            <input id="vessel" placeholder="NYK FURANO 025E" />
+          </div>
+          <div>
+            <label for="container">Container Number</label>
+            <input id="container" placeholder="OOCU0369290" />
+          </div>
+          <div>
+            <label for="seal">Seal Number</label>
+            <input id="seal" placeholder="OOLKMV5781" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="signatory">Signatory Full Name</label>
+            <input id="signatory" placeholder="André Cabano" />
+          </div>
+          <div>
+            <label for="designation">Designation</label>
+            <input id="designation" placeholder="Director" />
+          </div>
+          <div>
+            <label for="declarationDate">Declaration Date</label>
+            <input id="declarationDate" type="date" />
+          </div>
+          <div>
+            <label for="itemsPerPage">Items Per Page</label>
+            <select id="itemsPerPage">
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card grid">
+        <div class="actions">
+          <span class="pill">Step 1: Select SKUs</span>
+          <button id="selectAll" class="secondary" type="button">Select all</button>
+          <button id="clearAll" class="secondary" type="button">Clear</button>
+        </div>
+        <div id="skuList" class="sku-list"></div>
+      </section>
+
+      <section class="card grid">
+        <div class="actions">
+          <span class="pill">Step 2: Generate</span>
+          <button id="generate" type="button">Generate declaration</button>
+          <button id="downloadTxt" class="secondary" type="button" disabled>
+            Download .txt
+          </button>
+          <button id="downloadHtml" class="secondary" type="button" disabled>
+            Download .html
+          </button>
+        </div>
+        <div>
+          <label for="notes">Optional Notes</label>
+          <textarea
+            id="notes"
+            placeholder="Add shipment or product notes to include after the ingredient lists."
+          ></textarea>
+        </div>
+      </section>
+
+      <section class="card grid">
+        <div class="actions">
+          <span class="pill">Preview</span>
+        </div>
+        <div id="preview" class="preview">Generate a declaration to preview it here.</div>
+      </section>
+    </main>
+
+    <footer>
+      Output includes mandatory statements, letterhead per page, and shipment details for export
+      declarations.
+    </footer>
+
+    <script>
+      const products = [
+        {
+          sku: "FL065",
+          name: "Flippen Lekka Popcorn Sprinkle - Salt & Vinegar 100ml",
+          pack: "12 x 100ml",
+          ingredients: "Salt, Acidity Regulator, Spice Extract.",
+          allergens: "None",
+          categories: ["spice"],
+          special: {
+            containsDairy: false,
+            containsEgg: false,
+            containsGelatin: false,
+            containsHoney: false,
+            containsRice: false,
+            containsMaize: true,
+            containsWheat: false,
+            containsMushroom: false
+          }
+        },
+        {
+          sku: "FL053",
+          name: "Flippen Lekka Popcorn Sprinkle - Sour Cream & Chives 100ml",
+          pack: "12 x 100ml",
+          ingredients:
+            "Salt, Maize Starch, Dextrose, Maltodextrin, Onion Powder, Whey Powder (Milk), Cheese Powder (Milk Solids, Emulsifier [E481], Stabiliser [E331], Potassium Sorbate, Annatto [E160B], Anti-Caking Agent [E551]), MSG (Flavour Enhancer [E621]), Acidity Regulator (E262(ii)), Herbs and Spices, Flavouring (Milk), Flavour Enhancer (E627, E631), Spice Extract.",
+          allergens: "Milk",
+          categories: ["dairy", "spice", "maize"],
+          special: {
+            containsDairy: true,
+            dairyDetails:
+              "Whey Powder (Milk): 1.5%, Cheese Powder (Milk Solids): 0.8%. Heat treatment: dry blending. Dairy origin: South Africa.",
+            containsEgg: false,
+            containsGelatin: false,
+            containsHoney: false,
+            containsRice: false,
+            containsMaize: true,
+            containsWheat: false,
+            containsMushroom: false
+          }
+        },
+        {
+          sku: "FL035",
+          name: "Flippen Lekka Spice - Chutney Sprinkle 200ml",
+          pack: "12 x 200ml",
+          ingredients:
+            "Salt, Sugar, Acidifying Agents (E262), Spices, Flavourants, MSG (E621), Yeast Extract (Wheat), Anti-Caking Agent, Spice Extract.",
+          allergens: "Wheat (Gluten)",
+          categories: ["spice", "wheat"],
+          special: {
+            containsDairy: false,
+            containsEgg: false,
+            containsGelatin: false,
+            containsHoney: false,
+            containsRice: false,
+            containsMaize: false,
+            containsWheat: true,
+            containsMushroom: false
+          }
+        },
+        {
+          sku: "FL008",
+          name: "Flippen Lekka Spice - Hot & Spicy 200ml",
+          pack: "12 x 200ml",
+          ingredients:
+            "Salt, Spices & Herbs (Celery, Clove, Coriander, Cumin, Ginger, Onion, Oregano, Parsley, Paprika, Thyme, Cayenne Pepper), Flavouring (Soy), Partially Hydrogenated Vegetable Fat, Monosodium Glutamate (E621), Hydrolyzed Vegetable Protein, Colourant (E150c) (Sulphites), Yeast Extract, Anti-Caking Agent, Acidifiers, Corn Syrup Solids, Flavourant, Antioxidant, Sugar, Acidifying Agents (E262), Cereals (Wheat and Maize), Flavourant (Beef Flavour), Dextrose, Dehydrated Vegetable (Onion), Sodium Sulphites (E221), Spice Extracts (Coriander Oil, Paprika Oil, Vegetable Oil), Potassium Sorbate (E202), Anti-Caking Agent, and Flavour Enhancer (E627).",
+          allergens: "Soy, Wheat (Gluten), Sulphites",
+          categories: ["spice", "maize", "wheat"],
+          special: {
+            containsDairy: false,
+            containsEgg: false,
+            containsGelatin: false,
+            containsHoney: false,
+            containsRice: false,
+            containsMaize: true,
+            containsWheat: true,
+            containsMushroom: false,
+            spiceDetails:
+              "Cayenne pepper is included; percentage and origin available upon request."
+          }
+        },
+        {
+          sku: "FL002",
+          name: "Flippen Lekka Spice - Multi Purpose (Original) 200ml",
+          pack: "12 x 200ml",
+          ingredients:
+            "Salt, Spices & Herbs (Celery, Clove, Coriander, Cumin, Ginger, Onion, Oregano, Parsley, Paprika, Thyme), Flavouring (Soy), Partially Hydrogenated Vegetable Fat, Monosodium Glutamate (E621), Hydrolyzed Vegetable Protein, Colourant (E150c) (Sulphites), Yeast Extract, Anti-Caking Agent, Acidifiers, Corn Syrup Solids, Flavourant, Antioxidant, Sugar, Acidifying Agents (E262), Cereals (Wheat and Maize), Flavourant (Beef Flavour), Dextrose, Dehydrated Vegetable (Onion), Sodium Sulphites (E221), Spice Extracts (Coriander Oil, Paprika Oil, Vegetable Oil), Potassium Sorbate (E202), Anti-Caking Agent, and Flavour Enhancer (E627).",
+          allergens: "Soy, Wheat (Gluten), Sulphites",
+          categories: ["spice", "maize", "wheat"],
+          special: {
+            containsDairy: false,
+            containsEgg: false,
+            containsGelatin: false,
+            containsHoney: false,
+            containsRice: false,
+            containsMaize: true,
+            containsWheat: true,
+            containsMushroom: false
+          }
+        }
+      ];
+
+      const skuList = document.getElementById("skuList");
+      const preview = document.getElementById("preview");
+      const generateButton = document.getElementById("generate");
+      const downloadTxtButton = document.getElementById("downloadTxt");
+      const downloadHtmlButton = document.getElementById("downloadHtml");
+
+      const state = {
+        declarationText: "",
+        declarationHtml: ""
+      };
+
+      const letterhead = `Flippen Lekka Holdings (Pty) Ltd\n7 Papawer Str, Blomtuin, Bellville\nWestern Cape, 7530\nSouth Africa\nTel: 071 371 0499`;
+
+      function buildSkuList() {
+        skuList.innerHTML = "";
+        products.forEach((product) => {
+          const wrapper = document.createElement("label");
+          wrapper.className = "sku-item";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = product.sku;
+
+          const content = document.createElement("div");
+          content.innerHTML = `<h4>${product.sku} · ${product.name}</h4><small>${product.pack}</small>`;
+
+          wrapper.appendChild(checkbox);
+          wrapper.appendChild(content);
+          skuList.appendChild(wrapper);
+        });
+      }
+
+      function getSelectedProducts() {
+        const selected = Array.from(
+          skuList.querySelectorAll("input[type=checkbox]:checked")
+        ).map((input) => input.value);
+        return products.filter((product) => selected.includes(product.sku));
+      }
+
+      function formatShipmentDetails(details) {
+        return [
+          `Reference: ${details.reference || "________________"}`,
+          `Vessel & Voyage: ${details.vessel || "________________"}`,
+          `Container Number: ${details.container || "________________"}`,
+          `Seal Number: ${details.seal || "________________"}`
+        ].join("\n");
+      }
+
+      function buildComplianceNotes(product) {
+        const notes = [];
+        if (product.special.containsMushroom) {
+          notes.push("Mushroom present: scientific name(s) to be supplied.");
+        }
+        if (product.special.containsDairy) {
+          notes.push(
+            `Dairy declaration: ${
+              product.special.dairyDetails ||
+              "Provide % dairy by dry weight, heat treatment, and origin."
+            }`
+          );
+        }
+        if (product.special.containsEgg) {
+          notes.push(
+            "Egg declaration: provide % egg by dry weight, heat treatment, origin, and state \"no discernible traces of egg\"."
+          );
+        }
+        if (product.special.containsGelatin) {
+          notes.push(
+            "Gelatin declaration: provide % gelatin content, heat treatment, and origin."
+          );
+        }
+        if (product.special.containsHoney) {
+          notes.push(
+            "Honey declaration: provide % honey, heat treatment, and origin."
+          );
+        }
+        if (product.special.containsRice) {
+          notes.push(
+            "Rice declaration: confirm GMO status, species, origin, parboiled/uncooked status, and human consumption intent."
+          );
+        }
+        if (product.special.containsMaize || product.special.containsWheat) {
+          notes.push(
+            "Maize/Wheat declaration: commercially prepared, degerminated corn if applicable, free from prohibited weeds/contamination, clean retail packing, shelf stable, and for human consumption."
+          );
+        }
+        if (product.categories.includes("spice")) {
+          notes.push(
+            "Spice declaration: goods are commercially milled/ground and packaged in bags ≤25kg."
+          );
+        }
+        if (product.special.spiceDetails) {
+          notes.push(`Spice breakdown: ${product.special.spiceDetails}`);
+        }
+        return notes;
+      }
+
+      function buildGlobalStatements(selectedProducts) {
+        const containsDairy = selectedProducts.some((p) => p.special.containsDairy);
+        const containsEgg = selectedProducts.some((p) => p.special.containsEgg);
+        const containsGelatin = selectedProducts.some((p) => p.special.containsGelatin);
+        const containsHoney = selectedProducts.some((p) => p.special.containsHoney);
+        const lines = [
+          "This product is commercially prepared.",
+          "This product is shelf stable and fully cooked or heat treated, to render the contents sterile and free of contamination.",
+          "This product is retail packaged, which has not been opened or broken.",
+          "This product is for human consumption."
+        ];
+
+        if (!containsDairy && !containsEgg && !containsGelatin) {
+          lines.push("This product does not contain Dairy, Egg, Meat or Meat based ingredients.");
+        } else {
+          lines.push(
+            "Products containing Dairy, Egg, or Gelatin require supporting veterinary documentation from the EU approved offshore supplier."
+          );
+        }
+
+        if (containsHoney) {
+          lines.push("Honey content is declared per product lines above.");
+        }
+
+        return lines;
+      }
+
+      function buildPageHeader({ page, totalPages, details }) {
+        return [
+          letterhead,
+          "",
+          "MANUFACTURING DECLARATION",
+          formatShipmentDetails(details),
+          `Page ${page} of ${totalPages}`,
+          ""
+        ].join("\n");
+      }
+
+      function buildProductBlock(product) {
+        const lines = [
+          `${product.sku}`,
+          `${product.name}`,
+          `${product.pack}`,
+          `Ingredients: ${product.ingredients}`,
+          `Allergen(s) present: ${product.allergens}`
+        ];
+        const complianceNotes = buildComplianceNotes(product);
+        if (complianceNotes.length) {
+          lines.push("Compliance notes:");
+          complianceNotes.forEach((note) => lines.push(`- ${note}`));
+        }
+        return lines.join("\n");
+      }
+
+      function buildDeclaration(selectedProducts) {
+        const details = {
+          reference: document.getElementById("reference").value.trim(),
+          vessel: document.getElementById("vessel").value.trim(),
+          container: document.getElementById("container").value.trim(),
+          seal: document.getElementById("seal").value.trim()
+        };
+        const signatory = document.getElementById("signatory").value.trim();
+        const designation = document.getElementById("designation").value.trim();
+        const declarationDate = document.getElementById("declarationDate").value;
+        const notes = document.getElementById("notes").value.trim();
+        const itemsPerPage = Number(document.getElementById("itemsPerPage").value || 3);
+
+        const pages = [];
+        for (let i = 0; i < selectedProducts.length; i += itemsPerPage) {
+          pages.push(selectedProducts.slice(i, i + itemsPerPage));
+        }
+        const totalPages = Math.max(pages.length, 1);
+
+        const globalStatements = buildGlobalStatements(selectedProducts);
+
+        const pageTexts = pages.map((pageProducts, index) => {
+          const pageNumber = index + 1;
+          const block = [buildPageHeader({ page: pageNumber, totalPages, details })];
+
+          pageProducts.forEach((product) => {
+            block.push(buildProductBlock(product), "");
+          });
+
+          block.push("Declaration statements:");
+          globalStatements.forEach((statement) => block.push(`- ${statement}`));
+
+          if (notes) {
+            block.push("", "Additional notes:", notes);
+          }
+
+          block.push(
+            "",
+            `Signed: ${signatory || "________________"}`,
+            `Designation: ${designation || "________________"}`,
+            `Date: ${declarationDate || "________________"}`
+          );
+
+          return block.join("\n");
+        });
+
+        return pageTexts.join("\n\n---\n\n");
+      }
+
+      function buildDeclarationHtml(text) {
+        const lines = text.split("\n");
+        const paragraphs = lines
+          .map((line) => {
+            if (line === "") {
+              return "<br />";
+            }
+            return `<div>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+          })
+          .join("");
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manufacturing Declaration</title>
+  <style>
+    body { font-family: "Times New Roman", serif; margin: 40px; }
+    .page-break { page-break-after: always; margin: 24px 0; border-top: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+${paragraphs}
+</body>
+</html>`;
+      }
+
+      function downloadFile(filename, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      buildSkuList();
+
+      document.getElementById("selectAll").addEventListener("click", () => {
+        skuList.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
+          checkbox.checked = true;
+        });
+      });
+
+      document.getElementById("clearAll").addEventListener("click", () => {
+        skuList.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+      });
+
+      generateButton.addEventListener("click", () => {
+        const selectedProducts = getSelectedProducts();
+        if (!selectedProducts.length) {
+          preview.textContent = "Select at least one SKU to generate a declaration.";
+          downloadTxtButton.disabled = true;
+          downloadHtmlButton.disabled = true;
+          return;
+        }
+        const declarationText = buildDeclaration(selectedProducts);
+        const declarationHtml = buildDeclarationHtml(declarationText);
+
+        state.declarationText = declarationText;
+        state.declarationHtml = declarationHtml;
+
+        preview.textContent = declarationText;
+        downloadTxtButton.disabled = false;
+        downloadHtmlButton.disabled = false;
+      });
+
+      downloadTxtButton.addEventListener("click", () => {
+        if (!state.declarationText) return;
+        downloadFile("manufacturing-declaration.txt", state.declarationText, "text/plain");
+      });
+
+      downloadHtmlButton.addEventListener("click", () => {
+        if (!state.declarationHtml) return;
+        downloadFile("manufacturing-declaration.html", state.declarationHtml, "text/html");
+      });
+    </script>
+  </body>
+</html>
